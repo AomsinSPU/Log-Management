@@ -1,6 +1,6 @@
 # Acceptance Checklist และแผนหลักฐาน
 
-สถานะฉบับร่าง 2026-10-13 — **ยังไม่มี Implementation และยังไม่ได้รันทดสอบระบบ**
+สถานะ: ปรับตาม Architecture/Schema ที่ยืนยันแล้ว 2026-10-13 — **ยังไม่มี Implementation และยังไม่ได้รันทดสอบระบบ**
 
 อ้างอิง Assignment §2 Scope, §6 Deliverables, §7 Acceptance และ §8 Scoring คำว่า Target คือแผน ไม่ใช่ผลที่ยืนยันแล้ว
 
@@ -48,18 +48,23 @@
 | T2 | Viewer A เปิด Event ID ของ B | 404; ไม่ส่ง Raw/Metadata ของ B |
 | T3 | Viewer A เรียก Dashboard/Alerts/Rules ของ B | ไม่รั่วทั้งรายละเอียดและ Aggregate counts |
 | T4 | Viewer เรียก Create/Patch rule หรือ File upload | 403 |
-| T5 | API key A ส่ง Payload tenant=B หรือ Source ที่ไม่ได้รับอนุญาต | 403 และไม่มี Event ถูก Insert |
-| T6 | Token หมดอายุ, Signature ผิด, Issuer/Audience ผิด | 401 |
+| T5 | API key A ส่ง Payload tenant=B หรือ Source ที่ไม่ได้รับอนุญาต รวม Mixed batch | 403 และไม่มี Event ใน Request ถูก Insert; ตรวจ Authorization ก่อน Partial validation |
+| T6 | Session หมดอายุ, ไม่มี/ปลอม Cookie, Session ถูกลบหรือ User inactive | 401; ไม่คืนข้อมูลจาก Session ที่ไม่ถูกต้อง |
 | T7 | Raw มี HTML/script และ Search มี SQL-like text | แสดง Text อย่างปลอดภัย; Query ไม่ถูกเปลี่ยนความหมาย |
-| T8 | JSON เสีย, Batch มี Record ผิด, ไฟล์เกิน Limit | Error มีรายละเอียดเหมาะสม; Atomic batch ไม่เขียนบางส่วน |
+| T8 | JSON envelope เสีย, Mixed valid/invalid batch, ไฟล์เกิน Limit | Envelope ผิด/เกิน Limit ไม่เขียน; Mixed batch บันทึก Valid records และคืน accepted/rejected/results ตรงกับ Record ต้นฉบับหลัง Commit |
 | T9 | DB ไม่พร้อมระหว่าง HTTP ingest | ไม่ตอบ Accepted; 503 หรือ Error ที่ประกาศไว้ |
 | T10 | Alert ต่ำกว่า Threshold/ครบ Threshold/คนละ Tenant/คนละ IP | นับถูก Scope และเงื่อนไข |
 | T11 | Worker ประเมินซ้ำหรือ Restart ใน Cooldown | ไม่สร้าง Alert ซ้ำ |
 | T12 | Event time ตรงขอบ Window, มาช้า, อยู่อนาคต | เป็นไปตามช่วง (evaluation-window,evaluation] |
 | T13 | received_at อายุ <7 วัน, =7 วัน, >7 วัน | เก็บสองกรณีแรก ลบเฉพาะเกิน 7 วัน |
 | T14 | Event เก่าปี 2025 แต่เพิ่งรับวันนี้ | ไม่ถูก Retention ลบทันที; ค้นด้วย Historical range ได้ |
+| T15 | Login แล้ว Refresh หน้า จากนั้น Logout และใช้ Cookie เก่า | Refresh ยัง Login; Logout ลบ Session ฝั่ง DB; Cookie เก่าได้ 401 |
+| T16 | Session-authenticated POST/PATCH/DELETE/Upload ไม่มีหรือปลอม CSRF token | 403; ไม่มีการเปลี่ยนข้อมูล; ทดสอบ Login CSRF และ Session ID rotation ด้วย |
+| T17 | Partial success 99/100 แล้วส่งใหม่เฉพาะ Record ที่แก้ไข | รอบแรก Insert 99; รอบสอง Insert 1; Response ชี้ Record ที่ผิดได้; ไม่มีการส่ง 99 รายการแรกซ้ำ |
+| T18 | Search ด้วย Filters, Cursor, Limit และ IP | Default 50, Maximum 100; เรียงเวลา/ID; ไม่มีการหลุด Tenant; Filters ใช้กติกาเดียวกับ Dashboard |
+| T19 | สร้าง/เพิกถอน API key และใช้ Key หลังเพิกถอน | แสดง Key เต็มเฉพาะตอนสร้าง; Hash ใน DB; Key เพิกถอนส่งข้อมูลไม่ได้ |
 
-สถานะ T1–T14: NOT RUN; เพิ่มไฟล์ Tests/ผลรันเมื่อ Implementation พร้อม
+สถานะ T1–T19: NOT RUN; เพิ่มไฟล์ Tests/ผลรันเมื่อ Implementation พร้อม การยืนยัน Design ไม่เปลี่ยนสถานะเป็น PASS
 
 ## 5. Deliverables
 

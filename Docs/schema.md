@@ -1,6 +1,8 @@
 # Schema และ Source Mapping
 
-สถานะ: **Design draft ไม่ใช่ Database migration ที่รันแล้ว** | 2026-10-13
+สถานะ: **ยืนยัน Schema baseline แล้ว ยังไม่มี Database migration ที่รันแล้ว** | 2026-10-13
+
+อิง [การตัดสินใจที่ยืนยันทั้ง 20 ข้อ](architecture.md#confirmed-decisions): 8 ตารางรวม sessions, Partial success, Columns + JSONB + Raw และ Backend tenant scope โดยยังไม่มี RLS
 
 อ้างอิง Assignment §3 Recommended common schema และ §4 Sample logs Schema ในโจทย์ปรับได้ Field/Mapping/Default ด้านล่างเป็นข้อเสนอเพื่อให้ค้นหาร่วมกันได้
 
@@ -79,7 +81,7 @@ Syslog PRI แยก `facility = floor(PRI / 8)` และ `syslog_severity = PR
 
 Reject Unknown source, Invalid IP/Port, Severity นอกช่วง, Invalid explicit timestamp และ Raw เกิน Limit ค่า Placeholder ที่ประกาศไว้ เช่น `-` แปลงเป็น Null พร้อม Tag; ไม่แปลงข้อความผิดรูปแบบทุกชนิดเป็น Null เงียบ ๆ
 
-HTTP/File batch Validate ทุก Record ก่อน Commit แบบ Atomic; คืน Record index และ Error code Syslog ที่ Parse ไม่ได้บันทึก Error/Counter แต่ไม่ Insert Event ที่ Normalize ไม่สำเร็จ
+HTTP/File batch ใช้ Partial success: หลังผ่าน Authorization แล้ว Validate ทุก Record เก็บรายการที่ผ่านและคืน record_number แบบ 1-based พร้อม Error ของรายการที่ไม่ผ่าน เฉพาะ Valid records เขียนใน Transaction เดียวและรายงาน Accepted หลัง Commit; หาก Transaction ล้มเหลวให้ Rollback ชุด Valid records ไม่รายงานว่ารับสำเร็จ ตาม [HTTP contract](architecture.md#ingestion-contract) ไม่มีตาราง Ingestion batch/history ใน MVP Syslog ที่ Parse ไม่ได้บันทึก Error/Counter แต่ไม่ Insert Event ที่ Normalize ไม่สำเร็จ
 
 ## 4. Source mapping
 
@@ -141,11 +143,14 @@ Raw สำหรับ Syslog คือข้อความที่รับ; 
 | --- | --- | --- |
 | tenants | id UUID, slug TEXT, name TEXT, retention_days INTEGER, created_at TIMESTAMPTZ | PK id; Unique slug; retention_days≥7 |
 | users | id UUID, tenant_id UUID, email TEXT, password_hash TEXT, role TEXT, is_active BOOLEAN, created_at TIMESTAMPTZ | PK; FK tenant; Unique normalized email; role admin/viewer |
+| sessions | sid TEXT, user_id UUID NULL, data JSONB, expires_at TIMESTAMPTZ, created_at TIMESTAMPTZ | PK sid; FK user ON DELETE CASCADE; Index expires_at และ user_id; Null user เฉพาะ Pre-auth CSRF session |
 | events | Fields ตามข้อ 2 | PK id; FK tenant; CHECK source/severity/ports; Unique (tenant_id,id) |
 | api_keys | id UUID, tenant_id UUID, name TEXT, key_prefix TEXT, key_hash TEXT, allowed_sources TEXT[], revoked_at TIMESTAMPTZ, created_at TIMESTAMPTZ | PK; FK tenant; Unique key_hash |
 | alert_rules | id UUID, tenant_id UUID, name TEXT, rule_type TEXT, threshold INTEGER, window_seconds INTEGER, enabled BOOLEAN, created_by UUID, created_at TIMESTAMPTZ | PK; FK tenant/user; Unique (tenant_id,id); threshold/window>0 |
 | alerts | id UUID, tenant_id UUID, rule_id UUID, group_key TEXT, observed_count INTEGER, window_start/end TIMESTAMPTZ, first_seen/last_seen TIMESTAMPTZ, status TEXT, details JSONB | PK; FK tenant; Composite FK (tenant_id,rule_id)→alert_rules; Unique (tenant_id,id) |
 | alert_state | tenant_id UUID, rule_id UUID, group_key TEXT, last_triggered_at TIMESTAMPTZ, active_alert_id UUID | Composite PK (tenant_id,rule_id,group_key); Composite FKs Rule/Alert ใน Tenant เดียว |
+
+sessions เป็น Server-side session store; sid เป็น Opaque random ID ที่สร้างด้วย Session library เก็บใน HttpOnly cookie ไม่ใช่ Password หรือ JWT; data เก็บเฉพาะข้อมูล Session/CSRF ที่จำเป็น ไม่คัดลอก Password/API key ค่า Role/Tenant ที่ใช้อนุญาตต้องอ่านจาก User ปัจจุบัน ไม่เชื่อค่าที่ค้างใน Session การปรับ Columns ให้เข้ากับ PostgreSQL session adapter ทำได้โดยต้องรักษาพฤติกรรม Expiration/Rotation/Logout และจำนวนตารางที่ตกลงไว้
 
 Admin มี Home tenant ใน users แต่การเลือก Tenant อื่นผ่าน Platform-admin authorization ไม่ได้เปลี่ยน Home tenant API keys ไม่ได้รับสิทธิ์ข้าม Tenant แม้ Admin เป็นผู้สร้าง
 
@@ -175,3 +180,5 @@ Admin มี Home tenant ใน users แต่การเลือก Tenant �
 - Raw ยังตรวจเหตุการณ์ต้นทางได้; JSON ตัวอย่างและ Escaping ถูกต้อง
 - Payload Tenant ขัดกับ Auth context ไม่ Insert; Composite FK ป้องกัน Rule/Alert ต่าง Tenant
 - Retention ใช้ received_at ไม่ใช่ event_timestamp
+- Partial success: จำนวน accepted/rejected รวมเท่ากับจำนวน Records ที่ประมวลผลและเชื่อม record_number กับต้นฉบับได้; บันทึกเฉพาะ Valid records; Retry เฉพาะ Invalid records ไม่ทำรายการที่รับแล้วซ้ำ
+- Session อยู่หลัง Refresh; Expire/Logout/Inactive user ใช้ต่อไม่ได้; CSRF ปฏิเสธการเปลี่ยนข้อมูล; Login เปลี่ยน Session ID

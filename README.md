@@ -2,9 +2,9 @@
 
 ระบบ Demo Log Management สำหรับรวบรวม Log หลายแหล่ง แปลงเป็น Schema กลาง ค้นหา แสดง Dashboard และแจ้งเตือน โดยแยกข้อมูลตาม Tenant และวางแผนรองรับทั้ง Appliance และ SaaS
 
-> **สถานะ: Design draft — ยังไม่มี application implementation และยังรันระบบไม่ได้**
+> **สถานะ: ยืนยัน Architecture และ Schema แล้ว — ยังไม่มี application implementation และยังรันระบบไม่ได้**
 >
-> เอกสารฉบับร่างวันที่ 13 ตุลาคม 2026 สำหรับวางแผนงานเดี่ยวภายใน 10 วันหลังได้รับ Assignment วันที่จัดทำเอกสารไม่ใช่การยืนยันวันเริ่มนับกำหนดส่ง
+> ยืนยันการออกแบบร่วมกับผู้ใช้ครบ 20 หัวข้อ วันที่ 13 ตุลาคม 2026 สำหรับงานเดี่ยวภายใน 10 วันหลังได้รับ Assignment วันที่จัดทำเอกสารไม่ใช่การยืนยันวันเริ่มนับกำหนดส่ง
 
 ## เอกสารออกแบบ
 
@@ -30,17 +30,23 @@
 - Appliance บนเครื่อง/VM เดียว และ SaaS บน Public cloud พร้อม HTTPS
 - Retention อย่างน้อย 7 วัน พร้อม Tests ตัวอย่างอย่างน้อย 2–3 เคส
 
-## Stack ที่เสนอ
+## Stack ที่ยืนยัน
 
 | ส่วน | เทคโนโลยีที่วางแผนใช้ |
 | --- | --- |
 | Frontend | React, Vite, TypeScript, Recharts |
 | Backend | Node.js, Express, TypeScript, Zod |
 | Database | PostgreSQL, Typed columns, JSONB, B-tree และ GIN ตาม Query |
-| Authentication | JWT สำหรับผู้ใช้; API key สำหรับ Ingestion |
+| Authentication | Server-side session ใน PostgreSQL + HttpOnly cookie; API key สำหรับ Ingestion |
 | Ingestion | HTTP endpoint, Node UDP collector, JSON/NDJSON upload |
 | Background jobs | Worker สำหรับ Alert และ Retention |
-| Deployment | Docker Compose, Nginx, Ubuntu VM |
+| Deployment | Docker Compose บนเครื่อง/VM เดียว; Nginx Serve React build และ Proxy API |
+
+การตัดสินใจหลัก: HTTP/File ใช้ Partial success และตอบจำนวนที่บันทึกจริงหลัง Commit; Backend บังคับ Tenant scope บน Shared tables โดยยังไม่ใช้ RLS; Platform Admin เลือก Tenant ได้ ส่วน Viewer อยู่ Tenant เดียว ใช้ 8 ตารางรวม sessions ไม่มีตารางประวัติ Ingestion batch ใน MVP
+
+Alert ใช้ Event time ตรวจทุก 10 วินาทีและ Cooldown 5 นาที; Retention นับจาก received_at อย่างน้อย 7 วัน ลบทุกชั่วโมงครั้งละประมาณ 1,000 Records; Search ใช้ Filters/Raw substring พร้อม Cursor pagination ค่าเริ่มต้น 50 สูงสุด 100 รายการต่อ Request
+
+ดู [บันทึกการยืนยันทั้ง 20 หัวข้อ](Docs/architecture.md#confirmed-decisions) รายละเอียด Library เสริม เช่น Recharts/Zod ยังเป็นข้อเสนอการ Implementation
 
 ยังไม่ได้เลือกเวอร์ชัน Dependency ขั้นสุดท้าย ต้องเลือกเวอร์ชันที่ยังได้รับการดูแลและ Pin version ก่อนเริ่ม Implementation
 
