@@ -1,6 +1,6 @@
 # Schema และ Source Mapping
 
-สถานะ: **ยืนยัน Schema baseline แล้ว ยังไม่มี Database migration ที่รันแล้ว** | 2026-10-13
+สถานะ: **มี Migration 001 ครบ 8 ตารางแล้ว ทดสอบบน PostgreSQL WASM ผ่าน pg driver; ยังไม่ได้ตรวจ PostgreSQL 17 container** | 2026-10-14
 
 อิง [การตัดสินใจที่ยืนยันทั้ง 20 ข้อ](architecture.md#confirmed-decisions): 8 ตารางรวม sessions, Partial success, Columns + JSONB + Raw และ Backend tenant scope โดยยังไม่มี RLS
 

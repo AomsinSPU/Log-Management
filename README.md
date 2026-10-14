@@ -2,7 +2,7 @@
 
 ระบบ Demo Log Management สำหรับรวบรวม Log หลายแหล่ง แปลงเป็น Schema กลาง ค้นหา แสดง Dashboard และแจ้งเตือน โดยแยกข้อมูลตาม Tenant และวางแผนรองรับทั้ง Appliance และ SaaS
 
-> **สถานะ: ยืนยัน Architecture และ Schema แล้ว — ยังไม่มี application implementation และยังรันระบบไม่ได้**
+> **สถานะ 14 ตุลาคม 2026: มี Backend, Migration/Seed, Login/Session และ Tenant RBAC แล้ว — ยังไม่มี Frontend/Ingestion และยังไม่ได้ตรวจ Docker deployment**
 >
 > ยืนยันการออกแบบร่วมกับผู้ใช้ครบ 20 หัวข้อ วันที่ 13 ตุลาคม 2026 สำหรับงานเดี่ยวภายใน 10 วันหลังได้รับ Assignment วันที่จัดทำเอกสารไม่ใช่การยืนยันวันเริ่มนับกำหนดส่ง
 
@@ -13,6 +13,7 @@
 | [Architecture](Docs/architecture.md) | ขอบเขต ระบบย่อย Data flow, Security, Deployment และเหตุผลการออกแบบ |
 | [Schema และ Mapping](Docs/schema.md) | Common event schema, Source mapping, ตารางฐานข้อมูลและ Index |
 | [Acceptance checklist](Docs/acceptance-checklist.md) | เกณฑ์ตรวจรับ วิธีทดสอบ หลักฐาน และรายการส่งมอบ |
+| [Backend วันที่ 2](Docs/day2-backend.md) | วิธีรัน, API, Login flow และผลทดสอบวันที่ 2 |
 
 เอกสารสรุปจาก Assignment ภาษาไทยและภาษาอังกฤษ หัวข้อ 2–8 โดยแยก **ข้อกำหนดโจทย์** ออกจาก **ข้อเสนอแนะการออกแบบ** เอกสารโจทย์ต้นฉบับเก็บอ้างอิงในเครื่องและไม่รวมในการเผยแพร่ Repository นี้
 
@@ -48,7 +49,7 @@ Alert ใช้ Event time ตรวจทุก 10 วินาทีและ 
 
 ดู [บันทึกการยืนยันทั้ง 20 หัวข้อ](Docs/architecture.md#confirmed-decisions) รายละเอียด Library เสริม เช่น Recharts/Zod ยังเป็นข้อเสนอการ Implementation
 
-ยังไม่ได้เลือกเวอร์ชัน Dependency ขั้นสุดท้าย ต้องเลือกเวอร์ชันที่ยังได้รับการดูแลและ Pin version ก่อนเริ่ม Implementation
+Backend dependencies ถูก Pin version ใน `package.json` และ `package-lock.json` แล้ว ใช้ Node.js 24; Frontend dependencies จะเลือกเมื่อเริ่ม Implementation ของ Frontend
 
 ## เส้นทางเดโมที่วางแผน
 
@@ -61,7 +62,7 @@ Alert ใช้ Event time ตรวจทุก 10 วินาทีและ 
 
 ## การติดตั้งและใช้งาน
 
-**ยังไม่มีคำสั่งติดตั้งที่ใช้งานได้ใน Commit นี้** เพราะยังไม่มี Compose, Source code, Migration หรือ Seed script
+Backend มี Source code, Compose, Migration และ Seed แล้ว ดู [คู่มือวันที่ 2](Docs/day2-backend.md) ตั้งค่า `.env` จาก `.env.example` และ Seed passwords ก่อนรัน `docker compose up -d --build` (ยังไม่ได้ทดสอบ Docker บนเครื่องนี้)
 
 เป้าหมายเมื่อ Implementation พร้อม:
 
@@ -70,7 +71,7 @@ Alert ใช้ Event time ตรวจทุก 10 วินาทีและ 
 3. เปิด Services ด้วย `docker compose up -d`
 4. ตรวจ Readiness และ Login ด้วยบัญชี Seed ที่กำหนดผ่าน Environment
 
-รายการข้างต้นเป็นแผน ไม่ใช่ขั้นตอนที่ผ่านการทดสอบแล้ว คู่มือ `Docs/setup_appliance.md` และ `Docs/setup_saas.md` จะเพิ่มเมื่อทำ Deployment จริง
+รายการ Appliance เต็มระบบข้างต้นยังเป็นแผน Compose ปัจจุบันมี PostgreSQL/Backend และ one-shot Migration/Seed; Nginx/Collector/Worker และคู่มือ `Docs/setup_appliance.md`, `Docs/setup_saas.md` จะเพิ่มในงานถัดไป
 
 ## แผนพัฒนา 10 วัน
 
@@ -91,7 +92,7 @@ Alert ใช้ Event time ตรวจทุก 10 วินาทีและ 
 
 ## การทดสอบ
 
-ยังไม่มี Test implementation หรือผลทดสอบระบบ ชุดทดสอบที่วางแผนคือ Normalization, Ingest/Search/Tenant isolation, Alert threshold/window/dedup และ Retention boundary
+รัน `npm run typecheck`, `npm test`, `npm run build` ได้แล้ว ผลวันที่ 2 ผ่าน 12/12 รายการบน PostgreSQL WASM ผ่าน `pg` driver ครอบคลุม Migration/Seed, Login/Session, CSRF, RBAC และ Tenant isolation ดู [รายละเอียดหลักฐาน](Docs/day2-backend.md#หลักฐานการตรวจ) Normalization/Ingestion, Dashboard, Alert และ Retention tests จะเพิ่มตาม Implementation
 
 ตรวจรายละเอียดและสถานะได้ที่ [Acceptance checklist](Docs/acceptance-checklist.md) ทุกข้อยังเป็น `NOT RUN` จนกว่าจะมีหลักฐานจริง
 
@@ -105,5 +106,5 @@ Syslog TCP, CSV, User CRUD UI, Webhook, Enrichment, CI/CD, IaC, แยก Table 
 
 - SaaS URL: ยังไม่มี
 - วิดีโอเดโม: ยังไม่มี
-- คำสั่งรัน Tests: ยังไม่มี
+- คำสั่งรัน Tests: `npm test`
 - Credentials: ส่งให้ผู้ตรวจผ่านช่องทางที่เหมาะสม ไม่ใส่ Password/Token/API key ใน Repository

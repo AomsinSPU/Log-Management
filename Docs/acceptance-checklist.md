@@ -1,6 +1,6 @@
 # Acceptance Checklist และแผนหลักฐาน
 
-สถานะ: ปรับตาม Architecture/Schema ที่ยืนยันแล้ว 2026-10-13 — **ยังไม่มี Implementation และยังไม่ได้รันทดสอบระบบ**
+สถานะ 2026-10-14: **มี Backend วันที่ 2 และ Integration tests ผ่าน 12/12 บน PostgreSQL WASM; ยังไม่ได้ตรวจ Acceptance เต็มระบบ** ดู [หลักฐานและข้อจำกัด](day2-backend.md)
 
 อ้างอิง Assignment §2 Scope, §6 Deliverables, §7 Acceptance และ §8 Scoring คำว่า Target คือแผน ไม่ใช่ผลที่ยืนยันแล้ว
 
@@ -125,6 +125,6 @@ README/Architecture/Schema/Checklist ใน Commit เอกสารร่า�
 | วันที่/ผู้ทดสอบ | ยังไม่ระบุ |
 | Acceptance ที่ PASS | ไม่มีการทดสอบ |
 | Acceptance ที่ FAIL/BLOCKED | ยังไม่ประเมิน |
-| Tests command / Result | ยังไม่มี Implementation |
+| Tests command / Result | `npm test`: 12/12 PASS เฉพาะ Backend วันที่ 2; ไม่ใช่ผลตรวจรับเต็มระบบ |
 | Demo URL / Video URL | ยังไม่มี |
 | หลักฐานและข้อจำกัดคงเหลือ | เติมเมื่อทดสอบจริง |

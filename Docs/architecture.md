@@ -1,6 +1,6 @@
 # Architecture — Demo Log Management
 
-สถานะ: **ยืนยันการออกแบบร่วมกับผู้ใช้แล้ว ยังไม่ได้ Implement/Validate** | 2026-10-13
+สถานะ: **ยืนยันการออกแบบแล้ว; Backend/Migration/Login/Tenant scope เริ่ม Implement และผ่าน Integration tests วันที่ 2 ส่วนอื่นยังเป็นแผน** | 2026-10-14
 
 <a id="confirmed-decisions"></a>
 
@@ -216,7 +216,7 @@ Frontend เป็น React static build ที่ Nginx Serve ใน Production
 - PostgreSQL ใช้ Named volume; ไม่ Publish 5432
 - DB healthy → Migration/Seed สำเร็จ → Backend/Worker พร้อมรับงาน
 - `/health` ตรวจ Liveness; `/ready` ตรวจ DB/Migration readiness โดยไม่เปิดเผย Secrets
-- เป้าหมาย `docker compose up -d` หลังตั้ง Environment; ยังไม่ได้สร้าง Compose
+- มี Compose สำหรับ PostgreSQL/Backend/Migration/Seed แล้ว; Nginx/Collector/Worker ยังต้องเพิ่มและ Deployment ยังไม่ได้ทดสอบ
 
 ### SaaS
 
