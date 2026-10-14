@@ -4,6 +4,7 @@
 !.env.example
 *.pem
 *.key
+*.key.pub
 
 # Dependencies and generated files
 node_modules/

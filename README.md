@@ -2,7 +2,7 @@
 
 ระบบ Demo Log Management สำหรับรวบรวม Log หลายแหล่ง แปลงเป็น Schema กลาง ค้นหา แสดง Dashboard และแจ้งเตือน โดยแยกข้อมูลตาม Tenant และวางแผนรองรับทั้ง Appliance และ SaaS
 
-> **สถานะ 14 ตุลาคม 2026: มี Backend, Migration/Seed, Login/Session และ Tenant RBAC แล้ว — ยังไม่มี Frontend/Ingestion และยังไม่ได้ตรวจ Docker deployment**
+> **สถานะ 14 ตุลาคม 2026: มี Backend, Migration/Seed, Login/Session และ Tenant RBAC; Docker Compose Backend smoke test ผ่านแล้ว ยังไม่มี Frontend/Ingestion หรือ Deployment เต็มระบบ**
 >
 > ยืนยันการออกแบบร่วมกับผู้ใช้ครบ 20 หัวข้อ วันที่ 13 ตุลาคม 2026 สำหรับงานเดี่ยวภายใน 10 วันหลังได้รับ Assignment วันที่จัดทำเอกสารไม่ใช่การยืนยันวันเริ่มนับกำหนดส่ง
 
@@ -14,6 +14,9 @@
 | [Schema และ Mapping](Docs/schema.md) | Common event schema, Source mapping, ตารางฐานข้อมูลและ Index |
 | [Acceptance checklist](Docs/acceptance-checklist.md) | เกณฑ์ตรวจรับ วิธีทดสอบ หลักฐาน และรายการส่งมอบ |
 | [Backend วันที่ 2](Docs/day2-backend.md) | วิธีรัน, API, Login flow และผลทดสอบวันที่ 2 |
+| [ตรวจงานวันที่ 1](Docs/day1-foundation.md) | Checklist Foundation, Compose skeleton และรายการที่ยังต้องพิสูจน์ |
+| [ความพร้อม Cloud](Docs/cloud-readiness.md) | Oracle Singapore AD-1 ติด Capacity; สถานะ VM/SSH/HTTPS และรายการที่ยังต้องตรวจ |
+| [Docker smoke test](Docs/docker-smoke-test.md) | ผล Build/Start, Login/RBAC/CSRF และ Persistence บน PostgreSQL 17 จริง |
 
 เอกสารสรุปจาก Assignment ภาษาไทยและภาษาอังกฤษ หัวข้อ 2–8 โดยแยก **ข้อกำหนดโจทย์** ออกจาก **ข้อเสนอแนะการออกแบบ** เอกสารโจทย์ต้นฉบับเก็บอ้างอิงในเครื่องและไม่รวมในการเผยแพร่ Repository นี้
 
@@ -62,7 +65,7 @@ Backend dependencies ถูก Pin version ใน `package.json` และ `pack
 
 ## การติดตั้งและใช้งาน
 
-Backend มี Source code, Compose, Migration และ Seed แล้ว ดู [คู่มือวันที่ 2](Docs/day2-backend.md) ตั้งค่า `.env` จาก `.env.example` และ Seed passwords ก่อนรัน `docker compose up -d --build` (ยังไม่ได้ทดสอบ Docker บนเครื่องนี้)
+Backend มี Source code, Compose, Migration และ Seed แล้ว ดู [คู่มือวันที่ 2](Docs/day2-backend.md) ตั้งค่า `.env` จาก `.env.example` และ Seed passwords ก่อนรัน `docker compose up -d --build` (ทดสอบ Backend Compose บนเครื่องนี้แล้ว ดู Docs/docker-smoke-test.md)
 
 เป้าหมายเมื่อ Implementation พร้อม:
 

@@ -1,6 +1,6 @@
 # Acceptance Checklist และแผนหลักฐาน
 
-สถานะ 2026-10-14: **มี Backend วันที่ 2 และ Integration tests ผ่าน 12/12 บน PostgreSQL WASM; ยังไม่ได้ตรวจ Acceptance เต็มระบบ** ดู [หลักฐานและข้อจำกัด](day2-backend.md)
+สถานะ 2026-10-14: **มี Backend วันที่ 2 และ Integration tests ผ่าน 12/12 บน PostgreSQL WASM; Docker Compose/PostgreSQL 17 smoke test ผ่าน 42 HTTP status checks พร้อม Persistence หลัง Restart; ยังไม่ได้ตรวจ Acceptance เต็มระบบ** ดู [หลักฐาน Backend](day2-backend.md) และ [Docker smoke test](docker-smoke-test.md) ส่วน Oracle VM ยังติด Capacity ตาม [Cloud readiness](cloud-readiness.md)
 
 อ้างอิง Assignment §2 Scope, §6 Deliverables, §7 Acceptance และ §8 Scoring คำว่า Target คือแผน ไม่ใช่ผลที่ยืนยันแล้ว
 

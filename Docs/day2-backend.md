@@ -1,6 +1,6 @@
 # วันที่ 2 — Database, Login และ Tenant isolation
 
-สถานะ 14 ตุลาคม 2026: Backend implementation พร้อม; Typecheck, Build และ Integration tests ผ่าน 12/12 รายการ (รวม Parent test) บน Windows / Node.js 24.19.0 โดยใช้ PGlite PostgreSQL WASM ผ่าน TCP และ `pg` driver จริง ยังไม่ได้ทดสอบ Docker Compose/PostgreSQL 17 container เพราะเครื่องนี้ไม่มี Docker และยังไม่มี Login UI
+สถานะ 14 ตุลาคม 2026: Backend implementation พร้อม; Typecheck, Build และ Integration tests ผ่าน 12/12 รายการ (รวม Parent test) บน Windows / Node.js 24.19.0 โดยใช้ PGlite PostgreSQL WASM ผ่าน TCP และ `pg` driver จริง ทดสอบ Docker Compose/PostgreSQL 17 container ผ่านแล้ว ดู [Docker smoke test](docker-smoke-test.md); ยังไม่มี Login UI
 
 ## รันด้วย Docker Compose
 
@@ -94,4 +94,4 @@ Integration tests ใช้ PostgreSQL WASM แบบชั่วคราว �
 
 ไม่ต้องมี Docker สำหรับ Tests; ต้องอนุญาต Local network sockets Environment ของ Test แยกจาก `.env` และไม่มีการแก้ Database จริง รหัสผ่านใน Test เป็น Fixture สังเคราะห์ ไม่ใช่ Credentials ของระบบ
 
-ผลนี้ยังไม่ใช่ Acceptance A1/A7/A8 ครบถ้วน ต้องตรวจ Compose บน PostgreSQL 17 จริง รวม UI, Dashboard, Alerts และ SaaS ในวันถัดไป Dependencies ถูก Pin ด้วย package-lock.json; ตอนติดตั้ง npm audit รายงาน 0 vulnerabilities
+Backend Compose บน PostgreSQL 17 จริงผ่านแล้ว รวม 42 HTTP status checks และ Session หลัง Restart ดู [Docker smoke test](docker-smoke-test.md) ผลนี้ยังไม่ใช่ Acceptance A1/A7/A8 ครบถ้วน ต้องตรวจ UI, Dashboard, Alerts, Appliance บน Ubuntu และ SaaS ในวันถัดไป Dependencies ถูก Pin ด้วย package-lock.json; ตอนติดตั้ง npm audit รายงาน 0 vulnerabilities
